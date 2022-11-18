@@ -22,6 +22,7 @@
 	that they are working.
 */
 
+//code for 3rd test case: 
 void idle (void* args)
 {
 	while(1)

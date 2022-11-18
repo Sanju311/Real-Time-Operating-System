@@ -19,6 +19,8 @@ int osNumThreadsRunning = 0; //number of threads that have started runnin
 uint32_t mspAddr; //the initial address of the MSP
 
 
+/*SysTick handler decrements all deadlines and sleepTimers. 
+If a sleepTimer runs out it calls the wakeUp function and passes in that thread's index*/
 void SysTick_Handler(void){
 	
 	//i starts from 1 to skip over idle task
@@ -62,6 +64,7 @@ void setThreadingWithPSP(uint32_t* threadStack)
 	__set_PSP((uint32_t)threadStack);
 }
 
+//sets psp and calls sched to initalize threads
 bool osKernelStart()
 {
 	if(threadNums > 0)
@@ -80,18 +83,20 @@ int task_switch(void){
 		//to access it before overwriting r0
 }
 
-
+//yield function is called when a thread yields
 void osYield(void){
 	__ASM("SVC #0");
 }
 
+//sleep function is called when a thread needs to go to sleep after yielding
+//called for periodic threads & sleep threads
 void osSleep(void){
 	__ASM("SVC #1");	
 }
 
 
-//change status of thread that woke up 
-//add it to queue
+//change status of thread that woke up and set's it's deadline
+//if the newly woken thread has the lowest deadline a context switch happens if not nothing occurs
 void osWakeUp(int index){
 	osThreads[index].status = READY;
 	osThreads[index].deadline = osThreads[index].DEADLINE;
@@ -102,19 +107,11 @@ void osWakeUp(int index){
 }
 
 /*
-	The OS Scheduler.
-
-	It is responsible for:
-
-	- Saving the current stack pointer
-	- Setting the current thread to WAITING (useful later on when we have multiple ways to wait
-	- Finding the next task to run (As of Lab Project 2, it just cycles between all of the tasks)
-	- Triggering PendSV to perform the task switch
+	scheduler determines lowest deadline and sets its status to running 
 */ 
 void osSched(void)
 {
-		//first time running case
-		//initialize queue and sets currentTask to 0
+		//first time running case detemines lowest deadline and context switches to it
 		if(osCurrentTask == -1)
 		{
 		
@@ -150,15 +147,21 @@ void osSched(void)
 		}
 }
 
+
+//has seperate cases if called by osSleep(1) or osYield(0) 
+//calls sched to schedule the next thread
+//handles all context switches besides the initial one
 void SVC_Handler_Main(uint32_t *svc_args)
 {
 	char call = ((char*)svc_args[6]) [-2];
 	
+	//osSleep case
 	if(call == 1){
 		osThreads[osCurrentTask].status = SLEEP;
 		osThreads[osCurrentTask].sleepTime = osThreads[osCurrentTask].SLEEPTIME;
 	}
-		
+	
+	//osYield case
 	if(call == 0){
 		osThreads[osCurrentTask].status = READY;
 		osThreads[osCurrentTask].deadline = osThreads[osCurrentTask].DEADLINE;
