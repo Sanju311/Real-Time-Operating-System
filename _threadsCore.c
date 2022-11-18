@@ -42,13 +42,15 @@ uint32_t* getNewThreadStack(uint32_t offset)
 }
 
 //returns the thread ID, or -1 if that is not possible
-int osThreadNew(void (*tf)(void*args))
+int osThreadNew(void (*tf)(void*args), double deadline, int sleepTime)
 {
 	if(threadNums < MAX_THREADS)
 	{ 
 		osThreads[threadNums].status = READY; //tells the OS that it is ready but not yet run
-		osThreads[threadNums].runTime = -1;		//-1 for both so systick handler conditions do not go off
-		osThreads[threadNums].sleepTime = -1;
+		osThreads[threadNums].deadline = deadline;		//-1 for both so systick handler conditions do not go off
+		osThreads[threadNums].DEADLINE = deadline;
+		osThreads[threadNums].sleepTime = -1; //timer
+		osThreads[threadNums].SLEEPTIME = sleepTime; //value
 		osThreads[threadNums].threadFunction = tf;
 		osThreads[threadNums].taskStack = getNewThreadStack(MSR_STACK_SIZE + threadNums*THREAD_STACK_SIZE);//(uint32_t*)((mspAddr - MSR_STACK_SIZE) - (threadNums)*THREAD_STACK_SIZE);
 		

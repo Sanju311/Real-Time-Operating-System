@@ -30,6 +30,7 @@ void osSched(void);
 void osYield(void);
 void osSleep(void);
 void osWakeUp(int index);
+void print(char call);
 
 void setThreadingWithPSP(uint32_t* threadStack);
 

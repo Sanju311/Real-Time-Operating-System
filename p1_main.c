@@ -22,53 +22,51 @@
 	that they are working.
 */
 
-void taskYield (void* args)
+void idle (void* args)
 {
-	//yield condition
-	//int counter = 0;
-
 	while(1)
 	{
-		//counter++;
-	  printf("\n taskYield:");
-		
-		/*if(counter >400){
-			counter = 0;
-			osYield();
-		}*/
+		printf("\nidle");
 	}
-	
 }
 
-void taskSleep(void* args)
-{
 
+void sleep1 (void* args)
+{
 	int counter = 0;
 	while(1)
 	{
+		printf("\nsleep1");
 		counter++;
-		printf("%d\n In taskSleep: counter = ", counter);
 		
-			if(counter > 1000){
-				counter = 0;
-				osSleep();
-			}
+		if(counter == 100){
+			counter = 0;
+			osSleep();
+		}
 	}
-	
 }
 
-void taskLoop(void* args)
+void sleep2 (void* args)
 {
 	int counter = 0;
 	while(1)
 	{
-		counter ++;
-		printf("%d\n In taskSleep2: counter = ", counter);
+		printf("\nsleep2");
+		counter++;
 		
-		if(counter > 1000){
-				counter = 0;
-				osSleep();
-			}
+		if(counter == 100){
+			counter = 0;
+			osSleep();
+		}
+	}
+}
+
+void t12 (void* args)
+{
+	while(1)
+	{
+		printf("\n200");
+		osSleep();
 	}
 }
 
@@ -93,12 +91,13 @@ int main( void )
 	//Initialize the kernel. We'll need to do this every lab project
 	kernelInit();
 	
-	SysTick_Config(SystemCoreClock/100);
+	SysTick_Config(SystemCoreClock/1000);
 	
 	//set up my threads
-	osThreadNew(taskYield);
-	osThreadNew(taskSleep);
-	osThreadNew(taskLoop);
+	osThreadNew(idle, 10000 ,-1 );
+	osThreadNew(sleep1, 1000 ,2000 );
+	osThreadNew(sleep2, 1000 ,3000  );
+	//osThreadNew(t12, 1000/200 ,PERIODIC_SLEEP );
 	
 	//Now start the kernel, which will run our first thread
 	osKernelStart();

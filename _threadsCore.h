@@ -23,6 +23,6 @@ uint32_t* getNewThreadStack(uint32_t offset);
 
 
 //returns the thread ID, or -1 if that is not possible
-int osThreadNew(void (*tf)(void*args));
+int osThreadNew(void (*tf)(void*args), double deadline, int sleepTime);
 #endif
 

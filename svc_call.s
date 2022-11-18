@@ -1,7 +1,9 @@
 	AREA	handle_pend,CODE,READONLY
 	EXTERN task_switch ;I am going to call a C function to handle the switching
 	GLOBAL PendSV_Handler
+	GLOBAL SVC_Handler
 	PRESERVE8
+		
 PendSV_Handler
 	
 		MRS r0,PSP
@@ -23,5 +25,14 @@ PendSV_Handler
 		
 		;return
 		BX LR
+		
+SVC_Handler
+		EXTERN SVC_Handler_Main
+		TST LR,#4
+		ITE EQ
+		MRSEQ r0, MSP
+		MRSNE r0, PSP
+		B SVC_Handler_Main
+
 
 		END
